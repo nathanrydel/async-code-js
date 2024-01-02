@@ -50,3 +50,51 @@ async function showNumberRace(num1, num2, num3, num4) {
 
   console.log(trivia.text);
 }
+
+
+
+// Get all: make a new function, showNumberAll. that asks for trivia
+// about about different numbers. Make all of the requests at the same
+// time, but handle them once all requests are completed.
+
+// However, at least one of the “numbers” you use should be an invalid
+//  thing, like the string “WRONG”.
+
+// Log to the console the array of trivia for responses with a
+// successful status code, and the array of error messages for the
+//  responses with a failed status code.
+
+async function showNumberAll(...nums) {
+
+  const gatheredResponses = nums
+    .map(num => fetch(`${BASE_URL}/${num}?json`));
+
+  const results = await Promise.allSettled(gatheredResponses);
+
+  const validResponses = results
+    .filter(result => result.status === "fullfilled"
+            && result.value.ok); // This is creating an array of valid promises
+
+  // Log the trivia of the validResponses
+  validResponses.map(response => console.log(response.value.json()));
+
+  const invalidResponses = results
+    .filter(result => result.status === "fullfilled"
+            && result.value.ok === false);
+
+  invalidResponses.map(fail => console.log(fail));
+
+  // const invalidResponses = results
+  //   .filter(result => result.status === "fullfilled"
+  //           && result.value.ok === false);
+
+  // Log array of error messages for failed attempts
+  //invalidResponses.map(fail => console.log(fail.))
+
+
+
+
+
+
+
+}
