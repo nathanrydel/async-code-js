@@ -40,11 +40,11 @@ async function showNumberRace(num1, num2, num3, num4) {
 
   const raceWinner = await Promise.race(
     [promise1,
-     promise2,
-     promise3,
-     promise4
+      promise2,
+      promise3,
+      promise4
     ]
-  )
+  );
 
   const trivia = await raceWinner.json();
 
@@ -64,25 +64,52 @@ async function showNumberRace(num1, num2, num3, num4) {
 // successful status code, and the array of error messages for the
 //  responses with a failed status code.
 
-async function showNumberAll(...nums) {
+async function showNumberAll(nums) {
+  console.debug("Running showNumberAll");
 
   const gatheredResponses = nums
     .map(num => fetch(`${BASE_URL}/${num}?json`));
 
-  const results = await Promise.allSettled(gatheredResponses);
+  console.log("gatheredResponse: ", gatheredResponses);
 
-  const validResponses = results
-    .filter(result => result.status === "fullfilled"
-            && result.value.ok); // This is creating an array of valid promises
+  // Accepts an array of promises, returns a new Promise
+  const resultsPromises = await Promise.allSettled(gatheredResponses);
+
+
+  const validResponses = resultsPromises
+    .filter(result => result.status === "fulfilled"
+      && result.value.ok); // This is creating an array of valid promises
+
+
+  // iterate thru valid validResponses
+  let triviaFacts = [];
+  for (const response of validResponses) {
+    const fact = await response.json();
+    // grab the text element and add to an array
+    triviaFacts.push(fact.text);
+  }
+  // console log the array
+  console.log("showNumberAll fulfilled:", triviaFacts);
 
   // Log the trivia of the validResponses
-  validResponses.map(response => console.log(response.value.json()));
+  // validResponses.map(response => console.log(response.json().text));
+  // validResponses.map(response => console.log(response.value.json()));
 
-  const invalidResponses = results
-    .filter(result => result.status === "fullfilled"
-            && result.value.ok === false);
+  const invalidResponses = resultsPromises
+    .filter(result => result.status === "fulfilled"
+      && result.value.ok === false);
 
-  invalidResponses.map(fail => console.log(fail));
+
+  let errors = [];
+  for (const response of invalidResponses) {
+    const error = await response.json();
+    errors.push(`${error.status}: ${error.statusText}`);
+  }
+  // invalidResponses.map(fail => console.log(fail.value.json()));
+
+  console.log("showNumberAll rejected: ", errors);
+
+
 
   // const invalidResponses = results
   //   .filter(result => result.status === "fullfilled"
@@ -90,11 +117,5 @@ async function showNumberAll(...nums) {
 
   // Log array of error messages for failed attempts
   //invalidResponses.map(fail => console.log(fail.))
-
-
-
-
-
-
 
 }
